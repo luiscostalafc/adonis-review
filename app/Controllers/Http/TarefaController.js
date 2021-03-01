@@ -1,91 +1,48 @@
 'use strict'
 
-/** @typedef {import('@adonisjs/framework/src/Request')} Request */
-/** @typedef {import('@adonisjs/framework/src/Response')} Response */
-/** @typedef {import('@adonisjs/framework/src/View')} View */
+const Tarefa = use('App/Models/Tarefa')
+const Database = use('Database')
 
-/**
- * Resourceful controller for interacting with tarefas
- */
+
 class TarefaController {
-  /**
-   * Show a list of all tarefas.
-   * GET tarefas
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async index ({ request, response, view }) {
+
+  async index ({ request, response, auth }) {
+   const tarefa = await Tarefa.query().where('user_id', auth.user.id).fetch()
+  //  const tarefa = Database.select('titulo', 'descricao').from('tarefas')
+  //  .where('user_id', auth.user.id)
+
+    return tarefa
   }
 
-  /**
-   * Render a form to be used for creating a new tarefa.
-   * GET tarefas/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+
+  async store ({ request, response, auth }) {
+    try {
+      const {id} = auth.user
+
+      const data = request.only(["titulo", "descricao"])
+
+      const tarefa = await Tarefa.create({...data, user_id: id})
+
+      return tarefa
+
+    } catch (err) {
+      return response.status(500).send({ error: `Erro: ${err.message}`})
+    }
   }
 
-  /**
-   * Create/save a new tarefa.
-   * POST tarefas
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async store ({ request, response }) {
+
+
+  async show ({ params, request, response }) {
+   const tarefa = await Tarefa.query().where('id', params.id).where('user')
+
+   return tarefa
   }
 
-  /**
-   * Display a single tarefa.
-   * GET tarefas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async show ({ params, request, response, view }) {
-  }
 
-  /**
-   * Render a form to update an existing tarefa.
-   * GET tarefas/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
-  }
 
-  /**
-   * Update tarefa details.
-   * PUT or PATCH tarefas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
   async update ({ params, request, response }) {
   }
 
-  /**
-   * Delete a tarefa with id.
-   * DELETE tarefas/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
   async destroy ({ params, request, response }) {
   }
 }
