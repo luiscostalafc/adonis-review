@@ -32,18 +32,47 @@ class TarefaController {
 
 
 
-  async show ({ params, request, response }) {
-   const tarefa = await Tarefa.query().where('id', params.id).where('user')
+  async show ({ params, request, response, auth }) {
+   const tarefa = await Tarefa.query().where('id', params.id).where('user_id','=', auth.user.id).first()
+
+   if(!tarefa) {
+     return response.status(401).send({message: 'Nenhum registro localizado'})
+   }
 
    return tarefa
   }
 
 
 
-  async update ({ params, request, response }) {
+  async update ({ params, request, response, auth }) {
+   const { titulo, descricao } = request.all()
+
+   const tarefa = await Tarefa.query().where('id', params.id).where('user_id','=', auth.user.id).first()
+
+   if(!tarefa) {
+     return response.status(401).send({message: 'Nenhum registro localizado'})
+   }
+
+   tarefa.titulo = titulo
+   tarefa.descricao = descricao
+   tarefa.id = params.id
+
+   await tarefa.save()
+
+   return tarefa
+
   }
 
-  async destroy ({ params, request, response }) {
+  async destroy ({ params, request, response, auth }) {
+    const tarefa = await Tarefa.query().where('id', params.id).where('user_id','=', auth.user.id).first()
+
+   if(!tarefa) {
+     return response.status(401).send({message: 'Nenhum registro localizado'})
+   }
+
+   await tarefa.delete()
+   return response.status(200).send({message: 'registro removido'})
+
   }
 }
 
